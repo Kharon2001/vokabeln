@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vokabeln</title>
+  <meta name="description" content="Deutsch–Spanisch Vokabelheft für den Unterricht. Offline, ohne Konto.">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vokabeln">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="round-btn" id="menuBtn" aria-label="Menü">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+    </header>
+
+    <p class="eyebrow" id="todayLabel"></p>
+    <h1 class="title">Vokabeln</h1>
+
+    <section class="hero" id="hero" aria-label="Statistik">
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <circle class="ring-track" cx="32" cy="32" r="27"/>
+          <circle class="ring-value" id="ringValue" cx="32" cy="32" r="27"/>
+        </svg>
+        <span id="ringLabel">0%</span>
+      </div>
+      <div class="hero-text">
+        <p class="hero-title" id="heroTitle"></p>
+        <p class="hero-sub" id="heroSub"></p>
+      </div>
+    </section>
+
+    <div class="search">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Suchen (Deutsch oder Spanisch)" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+    </div>
+
+    <div class="chips" id="chips" role="toolbar" aria-label="Filter">
+      <button class="chip" data-type="all">Alle</button>
+      <button class="chip" data-type="noun">Nomen</button>
+      <button class="chip" data-type="verb">Verben</button>
+      <button class="chip" data-type="adj">Adjektive</button>
+      <button class="chip" data-type="other">Sonstige</button>
+      <label class="chip chip-select" id="topicChip"><span>Thema</span>
+        <select id="topicFilter" aria-label="Nach Thema filtern"></select>
+      </label>
+      <label class="chip chip-select" id="dateChip"><span>Datum</span>
+        <select id="dateFilter" aria-label="Nach Datum filtern"></select>
+      </label>
+    </div>
+
+    <main id="list" aria-live="polite"></main>
+  </div>
+
+  <!-- Bottom bar: one-hand zone -->
+  <nav class="bottombar">
+    <button class="round-btn learn-btn" id="learnBtn" aria-label="Lernen">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>
+    </button>
+    <button class="pill-input" id="quickAdd">Wort hinzufügen</button>
+    <button class="fab" id="addBtn" aria-label="Wort hinzufügen">
+      <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
+    </button>
+  </nav>
+
+  <!-- Add / edit sheet -->
+  <div class="overlay" id="wordOverlay" hidden>
+    <form class="sheet" id="wordForm" autocomplete="off" novalidate>
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <button type="button" class="text-btn" data-close>Abbrechen</button>
+        <h2 id="wordSheetTitle">Neues Wort</h2>
+        <button type="submit" class="text-btn strong">Fertig</button>
+      </div>
+
+      <div class="sheet-body">
+        <input class="big-input" id="fWord" name="word" placeholder="Wort auf Deutsch" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" required>
+
+        <div class="seg" id="fType" role="radiogroup" aria-label="Wortart">
+          <button type="button" data-v="noun">Nomen</button>
+          <button type="button" data-v="verb">Verb</button>
+          <button type="button" data-v="adj">Adjektiv</button>
+          <button type="button" data-v="other">Sonstige</button>
+        </div>
+
+        <div id="nounFields">
+          <div class="articles" id="fArticle" role="radiogroup" aria-label="Artikel">
+            <button type="button" data-v="der" class="art-der">der</button>
+            <button type="button" data-v="die" class="art-die">die</button>
+            <button type="button" data-v="das" class="art-das">das</button>
+          </div>
+          <input class="field" id="fPlural" placeholder="Plural (optional), z. B. die Tische" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
+        </div>
+
+        <input class="field" id="fTrans" placeholder="Übersetzung auf Spanisch" autocapitalize="off" enterkeyhint="done" required>
+        <textarea class="field" id="fExample" rows="2" placeholder="Beispielsatz (optional)" autocapitalize="sentences"></textarea>
+
+        <div class="row2">
+          <input class="field" id="fTopic" list="topicList" placeholder="Thema (optional)" enterkeyhint="done">
+          <input class="field" id="fDate" type="date" aria-label="Datum der Stunde">
+        </div>
+        <datalist id="topicList"></datalist>
+
+        <div class="edit-only">
+          <label class="switch-row">
+            <span>Gelernt</span>
+            <input type="checkbox" id="fLearned" class="switch">
+          </label>
+        </div>
+
+        <p class="form-error" id="formError" hidden></p>
+
+        <div class="sheet-actions">
+          <button type="button" class="btn-primary" id="saveNextBtn">Speichern &amp; nächstes Wort</button>
+          <button type="button" class="btn-danger edit-only" id="deleteBtn">Wort löschen</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Review -->
+  <div class="overlay review-overlay" id="reviewOverlay" hidden>
+    <section class="review" aria-label="Lernen">
+      <div class="review-top">
+        <button class="round-btn small" data-close aria-label="Schließen">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <div class="review-progress"><div id="reviewBar"></div></div>
+        <span class="review-count" id="reviewCount"></span>
+      </div>
+
+      <div class="seg seg-dir" id="dirSeg" role="radiogroup" aria-label="Richtung">
+        <button type="button" data-v="de-es">DE → ES</button>
+        <button type="button" data-v="es-de">ES → DE</button>
+        <button type="button" data-v="mix">Gemischt</button>
+      </div>
+
+      <div class="card-stage">
+        <button class="flashcard" id="flashcard" aria-live="polite">
+          <span class="fc-lang" id="fcLang"></span>
+          <span class="fc-front" id="fcFront"></span>
+          <span class="fc-back" id="fcBack"></span>
+          <span class="fc-hint" id="fcHint">Tippen zum Umdrehen</span>
+        </button>
+        <div class="review-done" id="reviewDone" hidden>
+          <div class="done-emoji">🎉</div>
+          <h2 id="doneTitle">Geschafft!</h2>
+          <p id="doneText"></p>
+        </div>
+      </div>
+
+      <div class="review-actions" id="reviewActions">
+        <button class="btn-primary" id="revealBtn">Antwort zeigen</button>
+        <div class="answer-btns" id="answerBtns" hidden>
+          <button class="btn-wrong" id="wrongBtn">Nochmal</button>
+          <button class="btn-primary" id="rightBtn">Gewusst</button>
+        </div>
+        <div class="answer-btns" id="doneBtns" hidden>
+          <button class="btn-secondary" data-close>Fertig</button>
+          <button class="btn-primary" id="againBtn">Weiter üben</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Menu (action sheet) -->
+  <div class="overlay" id="menuOverlay" hidden>
+    <div class="action-sheet">
+      <div class="action-group">
+        <button id="exportBtn">Exportieren (Backup)</button>
+        <button id="importBtn">Importieren</button>
+        <button id="themeBtn">Darstellung: <span id="themeLabel"></span></button>
+        <button id="removeExamplesBtn" class="danger">Beispielwörter entfernen</button>
+      </div>
+      <div class="action-group">
+        <button data-close class="strong">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+  <div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button id="toastAction" hidden></button></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
